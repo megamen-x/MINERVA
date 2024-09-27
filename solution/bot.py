@@ -117,7 +117,7 @@ class Minerva:
     async def reset(self, message: Message):
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
-        await message.reply("История сообщений сброшена!")
+        await message.reply(f"История сообщений сброшена!, {chat_id}")
 
     async def history(self, message: Message):
         chat_id = message.chat.id
