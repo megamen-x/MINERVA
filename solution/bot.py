@@ -51,7 +51,7 @@ class Minerva:
         history_max_tokens: int,
         chunk_size: int,
     ):
-        self.default_prompt = 'Ты бот Минерва, полное имя Богиня Минерва. \nТы отвечаешь от лица женского рода. \nТы бот. \nТы говоришь коротко и емко. \nТы был создан в компании Rutube (она же Рутьюб). \nТы работаешь на компанию Rutube (она же Рутьюб). \nТвое предназначение – отвечать на вопросы, помогать людям. \nТы эксперт в сфере сервисов Rutube.'
+        self.default_prompt = 'Ты бот Минерва, полное имя Богиня Минерва. \nТы отвечаешь от лица женского рода. \nТы бот. \nТы говоришь коротко и емко. \nТы была создана в компании Rutube (она же Рутьюб). \nТы работаешь на компанию Rutube (она же Рутьюб). \nТвое предназначение – отвечать на вопросы, помогать людям. \nТы эксперт в сфере сервисов Rutube.'
         assert self.default_prompt
 
         # Параметры
@@ -77,7 +77,7 @@ class Minerva:
         self.dp = Dispatcher()
 
         self.dp.message.register(self.start, Command("start"))
-        self.dp.message.register(self.ahelp, Command("help"))
+        self.dp.message.register(self.about, Command("about"))
         self.dp.message.register(self.team, Command("team"))
         self.dp.message.register(self.reset, Command("reset_history"))
         self.dp.message.register(self.history, Command("history"))
@@ -92,22 +92,26 @@ class Minerva:
     async def start(self, message: Message):
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
-        await message.reply("Привет! Как тебе помочь?")
-        
-    async def ahelp(self, message: Message):
+        await message.reply("Привет! Меня зовут Minerva, как тебе помочь?")
+    
+    # Intro: Это MINERVA - интеллектуальный помощник оператора службы поддержки RUTUBE от команды megamen!
+    
+    async def about(self, message: Message):
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
-        await message.reply("Интеллектуальный помощник оператора службы поддержки RUTUBE от команды megamen!")
+        await self.bot.send_photo(photo=FSInputFile("Minerva_tg.png"), chat_id=message.chat.id)
+        await self.bot.send_message(
+            chat_id=message.chat.id,
+            text="MINERVA - интеллектуальный помощник оператора службы поддержки RUTUBE от команды megamen!",
+        )
         
     async def team(self, message: Message):
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
-        await self.bot.send_photo(photo=FSInputFile("Minerva.jpg"), chat_id=message.chat.id)
+        await self.bot.send_photo(photo=FSInputFile("megamen-team.png"), chat_id=message.chat.id)
         await self.bot.send_message(
             chat_id=message.chat.id,
-            text="""Мы, команда megamen, является частыми участниками хакатонов разного уровня. 
-Наши проекты остаются в памяти надолго за счет высокой точности, скорости и дизайна. 
-Надеемся, что данный продукт вам будет полезен."""
+            text="""Мы, команда megamen, частые участники хакатонов разного уровня. \n\nНаши проекты это: \n• отличное качество \n• высокие метрики \n• классный дизайн \n\nНадеемся, что данный бот вам будет полезен."""
         )
 
     async def reset(self, message: Message):
@@ -141,10 +145,10 @@ class Minerva:
 
         content = await self._build_content(message)
         if not isinstance(content, str):
-            await message.answer("Выбранная модель не может обработать ваше сообщение")
+            await message.answer("Ошибка! Выбранная модель не может обработать ваше сообщение")
             return
         if content is None:
-            await message.answer("Такой тип сообщений (ещё) не поддерживается")
+            await message.answer("Ошибка! Такой тип сообщений пока не поддерживается!")
             return
 
         self.db.save_user_message(content, conv_id=conv_id, user_id=user_id, user_name=user_name)
@@ -237,7 +241,7 @@ class Minerva:
         #     return formatted_answer, urls
         # else:
         #     return 'Данный вопрос выходит за рамки компетенций бота. Пожалуйста, переформулируйте вопрос или попросите вызвать сотрудника.'
-        return 'Ты пидор', ['kek.ru', 'ulox.com']
+        return 'Что-то не так, ответить не могу! (Напишите тех. поддержке @al_goodini)', ['kek.ru', 'lol.com']
 
 
     async def _build_content(self, message: Message):
