@@ -54,7 +54,6 @@ class Minerva:
         bot_token: str,
         db_path: str,
         history_max_tokens: int,
-        chunk_size: int,
     ):
         """
         Инициация бота
@@ -63,19 +62,13 @@ class Minerva:
             bot_token (str): Токен бота.
             db_path (str): Путь к базе данных.
             history_max_tokens (int): Максимальное количество токенов в истории - на будущее.
-            chunk_size (int): Размер чанка.
         """
         self.default_prompt = 'Ты бот Минерва, полное имя Богиня Минерва. \nТы отвечаешь от лица женского рода. \nТы бот. \nТы говоришь коротко и емко. \nТы была создана в компании Rutube (она же Рутьюб). \nТы работаешь на компанию Rutube (она же Рутьюб). \nТвое предназначение – отвечать на вопросы, помогать людям. \nТы эксперт в сфере сервисов Rutube.'
         assert self.default_prompt
-
-        # Параметры
         self.history_max_tokens = history_max_tokens
-        self.chunk_size = chunk_size
 
-        # База
         self.db = Database(db_path)
 
-        # Клавиатуры
         self.likes_kb = InlineKeyboardBuilder()
         self.likes_kb.add(InlineKeyboardButton(
             text="👍",
@@ -86,7 +79,6 @@ class Minerva:
             callback_data="feedback:dislike"
         ))
 
-        # Бот
         self.bot = Bot(token=bot_token, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
         self.dp = Dispatcher()
 
@@ -171,7 +163,6 @@ class Minerva:
         user_name = self.get_user_name(message)
         chat_id = user_id
         conv_id = self.db.get_current_conv_id(chat_id)
-        history = self.db.fetch_conversation(conv_id)
 
         content = await self._build_content(message)
         if not isinstance(content, str):
@@ -185,13 +176,11 @@ class Minerva:
         placeholder = await message.answer("💬")
 
         try:
-            answer, _ = await self.query_api(
+            answer = await self.query_api(
                 user_content=content,
             )
-            chunk_size = self.chunk_size
-            answer_parts = [answer[i:i + chunk_size] for i in range(0, len(answer), chunk_size)]
             markup = self.likes_kb.as_markup()
-            new_message = await placeholder.edit_text(answer_parts[0], parse_mode=None, reply_markup=markup)
+            new_message = await placeholder.edit_text(answer, parse_mode=None, reply_markup=markup)
 
             self.db.save_assistant_message(
                 content=answer,
@@ -274,7 +263,10 @@ class Minerva:
             str: Ответ модели.
         """
         questions = {'question': user_content}
-        responce = requests.post('http://localhost:9875/send/', json=questions)
+        try:
+            responce = requests.post('http://localhost:9875/send/', json=questions)
+        except:
+            responce = ''
 
         if responce:
             return json.loads(responce.text)['answer']
@@ -304,15 +296,12 @@ def main(
     bot_token: str,
     db_path: str,
     history_max_tokens: int = 4500,
-    chunk_size: int = 2000,
 ) -> None:
     global index, retriever
-    # index, retriever = start_rag()
     bot = Minerva(
         bot_token=bot_token,
         db_path=db_path,
         history_max_tokens=history_max_tokens,
-        chunk_size=chunk_size,
     )
     asyncio.run(bot.start_polling())
 
