@@ -18,6 +18,7 @@ from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.client.telegram import TelegramAPIServer
 from aiogram.client.session.aiohttp import AiohttpSession
+import requests
 from database import Database
 
 # document processing
@@ -185,7 +186,6 @@ class Minerva:
 
         try:
             answer, _ = await self.query_api(
-                history=history,
                 user_content=content,
             )
             chunk_size = self.chunk_size
@@ -263,41 +263,23 @@ class Minerva:
             return content.replace("\n", " ")[:40]
         return "Not text"
 
-    async def query_api(self, history, user_content):
+    async def query_api(self, user_content):
         """
         Запрос к модели генерации.
 
         Args:
-            history (list): История сообщений.
-            user_content (str): Содержимое пользователя.
+            user_content (str): Содержимое сообщения пользователя пользователя.
 
         Returns:
-            tuple: Ответ и ссылки.
+            str: Ответ модели.
         """
-        # messages = history + [{"role": "user", "text": user_content}]
-        # messages = self._merge_messages(messages)
-        # assert messages
-        
-        # urls, chunks, relevant_score = top_k_rerank(user_content, retriever, reranker)
+        questions = {'question': user_content}
+        responce = requests.post('http://localhost:9875/send/', json=questions)
 
-
-        # messages[1]['text'] = '''Используй только следующий контекст, чтобы кратко ответить на вопрос в конце.
-        #     Не пытайся выдумывать ответ. Если контекст не соотносится с вопросом, скажи, что ты не можешь ответить на данный вопрос
-        #     Контекст:
-        #     ===========
-        #     {texts}
-        #     ===========
-        #     Вопрос:
-        #     ===========
-        #     {query}'''.format(texts='', query=user_content)
-        # chunks
-        # if relevant_score >= 0.805:
-        #     answer = response(messages)
-        #     formatted_answer = '{llm_gen}\n===================================\nСсылки с дополнительной информацией:\n1. {url_1}\n2. {url_2}\n3. {url_3}\n'.format(llm_gen=answer['result']['alternatives'][0]['message']['text'],
-        #     url_1=urls[0], url_2=urls[1], url_3=urls[2])
-        #     return formatted_answer, urls
-        # else:
-        return 'Что-то не так, ответить не могу! \n(Напишите тех. поддержке @al_goodini)', ['kek.ru', 'lol.com']
+        if responce:
+            return json.loads(responce.text)['answer']
+        else:
+            return 'Что-то не так, ответить не могу! \n(Напишите тех. поддержке @al_goodini)'
 
 
     async def _build_content(self, message: Message):
