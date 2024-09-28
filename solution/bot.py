@@ -21,23 +21,9 @@ from aiogram.client.session.aiohttp import AiohttpSession
 import requests
 from database import Database
 
-# document processing
-"""
-from io import BytesIO
-from pathlib import Path
-from shutil import rmtree
-from typing import List, Tuple
-from dotenv import load_dotenv
-from infer import get_information
-from emaling import send_bulk_email
-from punctuation_spell import update_punctuation
-from docx_pdf import convert_words_to_pdfs, add_encryption
-from pattern import fill_decrypton, fill_official, fill_unofficial
-"""
-
 
 class WorkStates(StatesGroup):
-    """Состояния для бота"""
+    """States for the bot"""
     DEFAULT = State()
     E_MAILING = State()
     TG_MAILING = State()
@@ -46,7 +32,7 @@ class WorkStates(StatesGroup):
 
 class Minerva:
     """
-    Класс бота Минерва.
+    Bot class Minerva.
 
     """
     def __init__(
@@ -56,12 +42,12 @@ class Minerva:
         history_max_tokens: int,
     ):
         """
-        Инициация бота
+        Bot initiation
         
         Args:
-            bot_token (str): Токен бота.
-            db_path (str): Путь к базе данных.
-            history_max_tokens (int): Максимальное количество токенов в истории - на будущее.
+            bot_token (str): Bot token.
+            db_path (str): Path to the database.
+            history_max_tokens (int): Maximum number of tokens in history - for the future.
         """
         self.default_prompt = 'Ты бот Минерва, полное имя Богиня Минерва. \nТы отвечаешь от лица женского рода. \nТы бот. \nТы говоришь коротко и емко. \nТы была создана в компании Rutube (она же Рутьюб). \nТы работаешь на компанию Rutube (она же Рутьюб). \nТвое предназначение – отвечать на вопросы, помогать людям. \nТы эксперт в сфере сервисов Rutube.'
         assert self.default_prompt
@@ -93,16 +79,16 @@ class Minerva:
 
     async def start_polling(self):
         """
-        Запуск бота.
+        Launching the bot.
         """
         await self.dp.start_polling(self.bot)
 
     async def start(self, message: Message):
         """
-        Обработка команды start.
+        Processing the start command.
 
         Args:
-            message (Message): Сообщение пользователя.
+            message (Message): User message.
         """
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
@@ -112,10 +98,10 @@ class Minerva:
     
     async def about(self, message: Message):
         """
-        Команда about - небольшой текст о боте.
+        The about command is a short text about the bot.
 
         Args:
-            message (Message): Сообщение пользователя.
+            message (Message): User message.
         """
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
@@ -127,10 +113,10 @@ class Minerva:
         
     async def team(self, message: Message):
         """
-        Команда team - небольшой текст о команде проекта.
+        Team - a short text about the project team.
 
         Args:
-            message (Message): Сообщение пользователя.
+            message (Message): User message.
         """
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
@@ -142,22 +128,22 @@ class Minerva:
     
     def get_user_name(self, message: Message):
         """
-        Получение имени пользователя.
+        Retrieving username.
 
         Args:
-            message (Message): Сообщение.
+            message (Message): User message.
 
         Returns:
-            str: Имя пользователя.
+            str: username.
         """
         return message.from_user.full_name if message.from_user.full_name else message.from_user.username
 
     async def generate(self, message: Message):
         """
-        Команда generate - генерация ответа на вопрос пользователя.
+        Generates an answer to the user's question.
 
         Args:
-            message (Message): Сообщение.
+            message (Message): User message.
         """
         user_id = message.from_user.id
         user_name = self.get_user_name(message)
@@ -195,10 +181,10 @@ class Minerva:
 
     async def save_feedback(self, callback: CallbackQuery):
         """
-        Обработка обратной связи (👍 или 👎).
+        Processing feedback (👍 or 👎).
 
         Args:
-            callback (CallbackQuery): Обратная связь.
+            callback (CallbackQuery): feedback.
         """
         user_id = callback.from_user.id
         message_id = callback.message.message_id
@@ -213,13 +199,13 @@ class Minerva:
     @staticmethod
     def _merge_messages(messages):
         """
-        Объединение сообщений.
+        Message merge function.
 
         Args:
-            messages (list): Список сообщений.
+            messages (list): List of messages.
 
         Returns:
-            list: Объединенный список сообщений.
+            list: Combined list of messages.
         """
         new_messages = []
         prev_role = None
@@ -240,27 +226,28 @@ class Minerva:
 
     def _crop_content(self, content):
         """
-        Обрезка содержимого.
+        Content trimming function.
 
         Args:
-            content (str): Содержимое.
+            content (str): Content.
 
         Returns:
-            str: Обрезанное содержимое.
+            str: trimming сontent.
         """
         if isinstance(content, str):
             return content.replace("\n", " ")[:40]
         return "Not text"
 
+
     async def query_api(self, user_content):
         """
-        Запрос к модели генерации.
+        Query to the generation model.
 
         Args:
-            user_content (str): Содержимое сообщения пользователя пользователя.
+            user_content (str): User message content.
 
         Returns:
-            str: Ответ модели.
+            str: Model response.
         """
         questions = {'question': user_content}
         try:
@@ -276,13 +263,13 @@ class Minerva:
 
     async def _build_content(self, message: Message):
         """
-        Построение содержимого.
+        Content construction.
 
         Args:
-            message (Message): Сообщение.
+            message (Message):  User message.
 
         Returns:
-            str: Итоговый ответ.
+            str: Final answer.
         """
         content_type = message.content_type
         if content_type == "text":
