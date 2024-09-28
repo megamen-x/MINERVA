@@ -21,8 +21,6 @@ class Messages(Base):
     conv_id = Column(String, nullable=False, index=True)
     timestamp = Column(Integer, nullable=False)
     message_id = Column(Integer)
-    system_prompt = Column(Text)
-
 
 class Conversations(Base):
     __tablename__ = 'current_conversations'
@@ -30,14 +28,6 @@ class Conversations(Base):
     user_id = Column(Integer, nullable=False, index=True)
     conv_id = Column(String, nullable=False, unique=True)
     timestamp = Column(Integer, nullable=False)
-
-
-class SystemPrompts(Base):
-    __tablename__ = 'system_prompts'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False, index=True)
-    prompt = Column(Text, nullable=False)
-
 
 class Likes(Base):
     __tablename__ = 'likes'
@@ -95,38 +85,9 @@ class Database:
                     "text": self._parse_content(m.content)
                 }
                 if include_meta:
-                    message["system_prompt"] = m.system_prompt
                     message["timestamp"] = m.timestamp
                 clean_messages.append(message)
             return clean_messages
-
-    def get_system_prompt(self, user_id, default_prompt):
-        with self.Session() as session:
-            prompt = (
-                session.query(SystemPrompts)
-                .filter(SystemPrompts.user_id == user_id)
-                .first()
-            )
-            if prompt:
-                return prompt.prompt
-            return default_prompt
-
-    def set_system_prompt(self, user_id: int, text: str):
-        with self.Session() as session:
-            prompt = (
-                session.query(SystemPrompts)
-                .filter(SystemPrompts.user_id == user_id)
-                .first()
-            )
-            if prompt:
-                prompt.prompt = text
-            else:
-                new_prompt = SystemPrompts(
-                    user_id=user_id,
-                    prompt=text
-                )
-                session.add(new_prompt)
-            session.commit()
 
     def save_user_message(self, content: str, conv_id: str, user_id: int, user_name: str = None):
         with self.Session() as session:
@@ -141,7 +102,7 @@ class Database:
             session.add(new_message)
             session.commit()
 
-    def save_assistant_message(self, content: str, conv_id: str, message_id: int, system_prompt: str):
+    def save_assistant_message(self, content: str, conv_id: str, message_id: int):
         with self.Session() as session:
             new_message = Messages(
                 role="assistant",
@@ -149,7 +110,6 @@ class Database:
                 conv_id=conv_id,
                 timestamp=self.get_current_ts(),
                 message_id=message_id,
-                system_prompt=system_prompt
             )
             session.add(new_message)
             session.commit()

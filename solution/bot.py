@@ -35,8 +35,8 @@ from pattern import fill_decrypton, fill_official, fill_unofficial
 """
 
 
-# States for the bot
 class WorkStates(StatesGroup):
+    """Состояния для бота"""
     DEFAULT = State()
     E_MAILING = State()
     TG_MAILING = State()
@@ -44,6 +44,10 @@ class WorkStates(StatesGroup):
 
 
 class Minerva:
+    """
+    Класс бота Минерва.
+
+    """
     def __init__(
         self,
         bot_token: str,
@@ -51,6 +55,15 @@ class Minerva:
         history_max_tokens: int,
         chunk_size: int,
     ):
+        """
+        Инициация бота
+        
+        Args:
+            bot_token (str): Токен бота.
+            db_path (str): Путь к базе данных.
+            history_max_tokens (int): Максимальное количество токенов в истории - на будущее.
+            chunk_size (int): Размер чанка.
+        """
         self.default_prompt = 'Ты бот Минерва, полное имя Богиня Минерва. \nТы отвечаешь от лица женского рода. \nТы бот. \nТы говоришь коротко и емко. \nТы была создана в компании Rutube (она же Рутьюб). \nТы работаешь на компанию Rutube (она же Рутьюб). \nТвое предназначение – отвечать на вопросы, помогать людям. \nТы эксперт в сфере сервисов Rutube.'
         assert self.default_prompt
 
@@ -79,17 +92,25 @@ class Minerva:
         self.dp.message.register(self.start, Command("start"))
         self.dp.message.register(self.about, Command("about"))
         self.dp.message.register(self.team, Command("team"))
-        self.dp.message.register(self.reset, Command("reset_history"))
-        self.dp.message.register(self.history, Command("history"))
+        
         self.dp.message.register(self.generate)
-
+        
         self.dp.callback_query.register(self.save_feedback, F.data.startswith("feedback:"))
 
 
     async def start_polling(self):
+        """
+        Запуск бота.
+        """
         await self.dp.start_polling(self.bot)
 
     async def start(self, message: Message):
+        """
+        Обработка команды start.
+
+        Args:
+            message (Message): Сообщение пользователя.
+        """
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
         await message.reply("Привет! Меня зовут Minerva, как тебе помочь?")
@@ -97,6 +118,12 @@ class Minerva:
     # Intro: Это MINERVA - интеллектуальный помощник оператора службы поддержки RUTUBE от команды megamen!
     
     async def about(self, message: Message):
+        """
+        Команда about - небольшой текст о боте.
+
+        Args:
+            message (Message): Сообщение пользователя.
+        """
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
         await self.bot.send_photo(photo=FSInputFile("Minerva_tg.png"), chat_id=message.chat.id)
@@ -106,6 +133,12 @@ class Minerva:
         )
         
     async def team(self, message: Message):
+        """
+        Команда team - небольшой текст о команде проекта.
+
+        Args:
+            message (Message): Сообщение пользователя.
+        """
         chat_id = message.chat.id
         self.db.create_conv_id(chat_id)
         await self.bot.send_photo(photo=FSInputFile("megamen-team.png"), chat_id=message.chat.id)
@@ -113,35 +146,31 @@ class Minerva:
             chat_id=message.chat.id,
             text="""Мы, команда megamen, частые участники хакатонов разного уровня. \n\nНаши проекты это: \n• отличное качество \n• высокие метрики \n• классный дизайн \n\nНадеемся, что данный бот вам будет полезен."""
         )
-
-    async def reset(self, message: Message):
-        chat_id = message.chat.id
-        self.db.create_conv_id(chat_id)
-        await message.reply(f"История сообщений сброшена!, {chat_id}")
-
-    async def history(self, message: Message):
-        chat_id = message.chat.id
-        conv_id = self.db.get_current_conv_id(chat_id)
-        history = self.db.fetch_conversation(conv_id)
-        for m in history:
-            if not isinstance(m["text"], str):
-                m["text"] = "Not text"
-        history = self._merge_messages(history)
-        history = json.dumps(history, ensure_ascii=False)
-        if len(history) > self.chunk_size:
-            history = history[:self.chunk_size] + "... truncated"
-        await message.reply(history, parse_mode=None)
-
+    
     def get_user_name(self, message: Message):
+        """
+        Получение имени пользователя.
+
+        Args:
+            message (Message): Сообщение.
+
+        Returns:
+            str: Имя пользователя.
+        """
         return message.from_user.full_name if message.from_user.full_name else message.from_user.username
 
     async def generate(self, message: Message):
+        """
+        Команда generate - генерация ответа на вопрос пользователя.
+
+        Args:
+            message (Message): Сообщение.
+        """
         user_id = message.from_user.id
         user_name = self.get_user_name(message)
         chat_id = user_id
         conv_id = self.db.get_current_conv_id(chat_id)
         history = self.db.fetch_conversation(conv_id)
-        system_prompt = self.db.get_system_prompt(chat_id, self.default_prompt)
 
         content = await self._build_content(message)
         if not isinstance(content, str):
@@ -158,7 +187,6 @@ class Minerva:
             answer, _ = await self.query_api(
                 history=history,
                 user_content=content,
-                system_prompt=system_prompt
             )
             chunk_size = self.chunk_size
             answer_parts = [answer[i:i + chunk_size] for i in range(0, len(answer), chunk_size)]
@@ -169,7 +197,6 @@ class Minerva:
                 content=answer,
                 conv_id=conv_id,
                 message_id=new_message.message_id,
-                system_prompt=system_prompt
             )
 
         except Exception:
@@ -178,6 +205,12 @@ class Minerva:
 
 
     async def save_feedback(self, callback: CallbackQuery):
+        """
+        Обработка обратной связи (👍 или 👎).
+
+        Args:
+            callback (CallbackQuery): Обратная связь.
+        """
         user_id = callback.from_user.id
         message_id = callback.message.message_id
         feedback = callback.data.split(":")[1]
@@ -190,6 +223,15 @@ class Minerva:
 
     @staticmethod
     def _merge_messages(messages):
+        """
+        Объединение сообщений.
+
+        Args:
+            messages (list): Список сообщений.
+
+        Returns:
+            list: Объединенный список сообщений.
+        """
         new_messages = []
         prev_role = None
         for m in messages:
@@ -208,17 +250,32 @@ class Minerva:
         return new_messages
 
     def _crop_content(self, content):
+        """
+        Обрезка содержимого.
+
+        Args:
+            content (str): Содержимое.
+
+        Returns:
+            str: Обрезанное содержимое.
+        """
         if isinstance(content, str):
             return content.replace("\n", " ")[:40]
         return "Not text"
 
-    async def query_api(self, history, user_content, system_prompt: str) -> tuple:
+    async def query_api(self, history, user_content):
+        """
+        Запрос к модели генерации.
+
+        Args:
+            history (list): История сообщений.
+            user_content (str): Содержимое пользователя.
+
+        Returns:
+            tuple: Ответ и ссылки.
+        """
         # messages = history + [{"role": "user", "text": user_content}]
         # messages = self._merge_messages(messages)
-        # assert messages
-
-        # if messages[0]["role"] != "system" and system_prompt.strip():
-        #     messages.insert(0, {"role": "system", "text": system_prompt})
         # assert messages
         
         # urls, chunks, relevant_score = top_k_rerank(user_content, retriever, reranker)
@@ -240,11 +297,19 @@ class Minerva:
         #     url_1=urls[0], url_2=urls[1], url_3=urls[2])
         #     return formatted_answer, urls
         # else:
-        #     return 'Данный вопрос выходит за рамки компетенций бота. Пожалуйста, переформулируйте вопрос или попросите вызвать сотрудника.'
-        return 'Что-то не так, ответить не могу! (Напишите тех. поддержке @al_goodini)', ['kek.ru', 'lol.com']
+        return 'Что-то не так, ответить не могу! \n(Напишите тех. поддержке @al_goodini)', ['kek.ru', 'lol.com']
 
 
     async def _build_content(self, message: Message):
+        """
+        Построение содержимого.
+
+        Args:
+            message (Message): Сообщение.
+
+        Returns:
+            str: Итоговый ответ.
+        """
         content_type = message.content_type
         if content_type == "text":
             text = message.text
