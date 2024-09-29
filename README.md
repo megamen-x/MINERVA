@@ -131,6 +131,6 @@
 
 ## <h3 align="start"><a id="title5">Citations</a></h3> 
 
-* **[GraphRAG](https://github.com/microsoft/graphrag)**
-* **[Ollama](https://github.com/TheAiSingularity/graphrag-local-ollama)**
+* **[GraphRAG (original microsoft repository)](https://github.com/microsoft/graphrag)**
+* **[GraphRAG with local inference](https://github.com/TheAiSingularity/graphrag-local-ollama)**
 
