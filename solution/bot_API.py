@@ -250,14 +250,19 @@ class Minerva:
             str: Model response.
         """
         API_TOKEN = "AQVNyFmd2wp6EBsptTgwLOQ18HDxTpKpNjInMkvH"
+        # NODE_ID = "bt1rao4vdhcscdv79b7j"
         NODE_ALIAS = "datasphere.user.megamen"
         FOLDER_ID = "b1g0rlo9stilfpv8erqq"
         BASE_URL = f"https://node-api.datasphere.yandexcloud.net/send/"
         
-        data = {"question": user_content}
+        data = {
+            "question": user_content
+        }
         
         headers = {
+            # "x-node-id": NODE_ID,
             "x-node-alias": NODE_ALIAS,
+            # "Content-Type": "application/json",
             "Authorization": "Api-Key" + API_TOKEN,
             "x-folder-id": FOLDER_ID,
         }
