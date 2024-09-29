@@ -95,10 +95,6 @@
     ```
     conda install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
     ```
-    - Запуск чат-бота:
-    ```
-    python bot.py --bot_token={your_bot_token} --db_path={db_file_name}.db
-    ```
     - Запуск LLM:
     ```
     pip install "sglang[all]"
@@ -118,7 +114,10 @@
     unzip me5_instruct.zip -d .
     python uvicorn main:app --host 0.0.0.0 --port 9875
     ```
-
+    - Запуск чат-бота:
+    ```
+    python bot.py --bot_token={your_bot_token} --db_path={db_file_name}.db
+    ```
 </details> 
 
 </br> 
