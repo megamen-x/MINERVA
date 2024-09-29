@@ -53,7 +53,7 @@
     - **```Graph-RAG```**:
       - BAAI/bge-m3
     - **```LMM```**:
-      - CohereForAI/c4ai-command-r-08-2024 (первый вариант)
+      - CohereForAI/c4ai-command-r-plus-08-2024 (первый вариант)
       - Qwen/Qwen2-72B (второй вариант)
 
 **Клиентская часть**
@@ -76,9 +76,9 @@
   **```Telegram-bot + FastAPI + ML-models;```**
 
 <details>
-  <summary> <strong><i> Инструкция по запуску FastAPI-сервера:</i></strong> </summary>
+  <summary> <strong><i> Инструкция по запуску Всего решения:</i></strong> </summary>
   
-  - В Visual Studio Code (**Windows-PowerShell activation recommended**) через терминал последовательно выполнить следующие команды:
+  - В Visual Studio Code (**Linux**) через терминал последовательно выполнить следующие команды:
   
     - Клонирование репозитория:
     ```
@@ -90,8 +90,7 @@
     ```
     - Уставновка зависимостей (при использовании **CUDA 12.4**):
     ```
-    pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-    pip3 install -r requirements.txt
+    conda install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
     ```
     - Запуск чат-бота:
     ```
@@ -110,7 +109,10 @@
     pip install future
     pip install -qU FlagEmbedding
     pip install -q peft
+    pip install gdown
     pip install fastapi uvicorn
+    gdown https://drive.google.com/uc?id=15DQ7gqb9U92rjjREMpcN5aUTOD-Kad26
+    unzip me5_instruct.zip -d .
     python uvicorn main:app --host 0.0.0.0 --port 9875
     ```
 
