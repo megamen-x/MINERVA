@@ -101,19 +101,23 @@
     pip install flashinfer -i https://flashinfer.ai/whl/cu124/torch2.4/
     python -m sglang.launch_server --model-path CohereForAI/c4ai-command-r-plus-08-2024 --port 8000 --tp 4
     ```
-    - Запуск RAG на инференс:
-    ```
-    cd CustomGraphRAG
-    pip install -e .
-    pip install future
-    pip install -qU FlagEmbedding
-    pip install -q peft
-    pip install gdown
-    pip install fastapi uvicorn
-    gdown https://drive.google.com/uc?id=15DQ7gqb9U92rjjREMpcN5aUTOD-Kad26
-    unzip me5_instruct.zip -d .
-    python uvicorn main:app --host 0.0.0.0 --port 9875
-    ```
+    - Запуск RAG на инференс.
+   В папку CustomGraphRAG/raghacaton необходимо добавить .env файл, со следующим содержимым:
+     ```
+     GRAPHRAG_API_KEY=EMPTY
+     ```
+      ```
+      cd CustomGraphRAG
+      pip install -e .
+      pip install future
+      pip install -qU FlagEmbedding
+      pip install -q peft
+      pip install gdown
+      pip install fastapi uvicorn
+      gdown https://drive.google.com/uc?id=15DQ7gqb9U92rjjREMpcN5aUTOD-Kad26
+      unzip me5_instruct.zip -d .
+      python uvicorn main:app --host 0.0.0.0 --port 9875
+      ```
     - Запуск чат-бота:
     ```
     python bot.py --bot_token={your_bot_token} --db_path={db_file_name}.db
