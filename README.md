@@ -52,9 +52,9 @@
  - **Использованные модели:**
     - **```Graph-RAG```**:
       - BAAI/bge-m3
-    - **```LMM```**:
+    - **```LLM```**:
       - CohereForAI/c4ai-command-r-plus-08-2024 (первый вариант)
-      - Qwen/Qwen2-72B (второй вариант)
+      - Qwen/Qwen2.5-72B-Instruct (второй вариант)
 
 **Клиентская часть**
 
@@ -128,3 +128,9 @@
 ***Все обновления и нововведения будут размещаться здесь!***
 
 <p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
+
+## <h3 align="start"><a id="title5">Citations</a></h3> 
+
+* **[GraphRAG](https://github.com/microsoft/graphrag)**
+* **[Ollama](https://github.com/TheAiSingularity/graphrag-local-ollama)**
+
