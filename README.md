@@ -71,6 +71,8 @@
 
 ## <h3 align="start"><a id="title3">Тестирование и запуск</a></h3> 
 
+На момент хакатона доступно: [тестирование решения, развернутого на DataSphere с помощью curl или Invoke-RestMethod](https://disk.yandex.ru/d/bWSJI852iAUhaA)
+
 Данный репозиторий предполагает следующую конфигурацию тестирования решения:
   
   **```Telegram-bot + FastAPI + ML-models;```**
