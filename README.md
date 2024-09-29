@@ -84,11 +84,9 @@
     ```
     git clone https://github.com/megamen-x/MINERVA.git
     ```
-    - Создание и активация виртуального окружения (Протестировано на **Python 3.10.6**):
+    - Создание и активация виртуального окружения (Протестировано на **Python 3.10.14**):
     ```
-    cd ./MINERVA
-    python -m venv .venv
-    .venv\Scripts\activate
+    conda create --name graphenv python=3.10 -y && conda activate graphenv
     ```
     - Уставновка зависимостей (при использовании **CUDA 12.4**):
     ```
@@ -99,24 +97,26 @@
     ```
     python bot.py --bot_token={your_bot_token} --db_path={db_file_name}.db
     ```
+    - Запуск LLM:
+    ```
+    pip install "sglang[all]"
+    pip install flashinfer -i https://flashinfer.ai/whl/cu124/torch2.4/
+    python -m sglang.launch_server --model-path CohereForAI/c4ai-command-r-plus-08-2024 --port 8000 --tp 4
+    ```
+    - Запуск RAG на инференс:
+    ```
+    cd CustomGraphRAG
+    pip install -e .
+    pip install future
+    pip install -qU FlagEmbedding
+    pip install -q peft
+    pip install fastapi uvicorn
+    python uvicorn main:app --host 0.0.0.0 --port 9875
+    ```
 
 </details> 
 
-
 </br> 
-
-**Аппаратные требования**
-
-| Обеспечение | Требование |
-| :----------- | :---------- |
-| Платформа, ОС  | Windows (> 8.1), Linux (core > 5.15)    |
-| Python | 3.10 or 3.11 (рекомендовано) |
-| RAM  | 30 GB или более |
-| Свободное место на диске | > 20 GB |
-| GPU | NVIDIA RTX Ampere или Ada Generation GPU > 24 GB VRAM |
-
-<p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
-
 
 ## <h3 align="start"><a id="title4">Обновления</a></h3> 
 
